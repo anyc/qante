@@ -1,0 +1,1 @@
+doc/screenplay.qml.example

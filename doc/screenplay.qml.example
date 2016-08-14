@@ -1,0 +1,134 @@
+
+import QtQuick 2.5
+import QtQuick.Window 2.2
+
+Item {
+	Component.onCompleted: {
+		var args = {}
+		var scene
+		
+		qante.defaultDuration = 2000
+		
+		// a welcome screen implemented using simple_html
+		{
+			// initialize a new scene
+			scene = newWidget(qante, "Scene", args)
+			
+			// override the htmlURL
+			args = {"htmlURL": "example1.html"}
+			// add a simple_html widget to the scene
+			newWidget(scene, "simple_html", args)
+			
+			// add scene to this screenplay
+			addScene(scene)
+		}
+		
+		// show a simple HTML page with a scrolling ticker on the bottom
+		{
+			var ticker
+			
+			scene = newWidget(qante, "Scene", args)
+			scene.duration = 10000
+			
+			args = {
+				"feedType": ["atom"],
+				"urls": [
+					"http://rpibuntu.kicherer.org/www/feeds/news.atom.xml",
+				],
+				"namespaces": ["http://www.w3.org/2005/Atom"]
+			}
+			
+			ticker = newWidget(scene, "ticker", args)
+			ticker.z = 1 // ensure ticker is always visible on top
+			
+			args = {"htmlURL": "example2.html"}
+			newWidget(scene, "simple_html", args)
+			
+			addScene(scene)
+		}
+		
+		// show live webcam images or images from a directory with a ticker on the bottom
+		{
+			// set time after which a new image and ticker entry is shown
+			var interval = 4000
+			var ticker
+			var slide
+			
+			scene = newWidget(qante, "Scene", args)
+			// disable global timer-based scene flip to avoid flipping during
+			// animations. the slideshow will initiate a flip after the animation
+			// finished
+			scene.autoFlip = false
+			
+			args = {
+				// the slideshow will trigger a flip
+				"autoLoop": false,
+				// stop the scrolling one second sooner
+				"scrollTime": interval-1000,
+				"feedType": ["atom"],
+				"urls": [
+						"http://rpibuntu.kicherer.org/www/feeds/news.atom.xml",
+					],
+				"namespaces": ["http://www.w3.org/2005/Atom"]
+			}
+			
+			ticker = newWidget(scene, "ticker", args)
+			ticker.z = 1
+			
+			args = {
+				"moveTime": interval,
+				
+				// the slideshow widget supports two ways to flip to the next
+				// scene:
+				//   1. after all images have been shown one time
+				//   2. after the timer run out and all animations finished
+				
+				// method 1:
+				"updateWindowStart": [ticker.flip,], // trigger flip of the ticker
+				"sceneEnd": function() { flipScene() }, // trigger switch to next scene
+				
+				// method 2:
+// 				"updateWindowStart": [ticker.flip, function() { if (rotTimer.running == false) flipScene(); }],
+				
+				
+				// either set imageList or imageFolder
+				"imageList": [
+						["Live: Turmberg Karlsruhe Durlach", "http://web1.karlsruhe.de/Gifs/webcam_turmberg.jpg"],
+						["Live: Zoologischen Stadtgarten Karlsruhe", "http://web1.karlsruhe.de/Gifs/webcam_exotenhaus.jpg"],
+				],
+// 				"imageFolder": "imgs/",
+			}
+			
+			newWidget(scene, "slideshow", args)
+			
+			addScene(scene)
+		}
+		
+		// show current weather and a forecast using data from openweathermap.org
+// 		{
+// 			scene = newWidget(qante, "Scene", args)
+// 			scene.duration = 10000
+// 			
+// 			args = {
+// 				"lang": "de",
+// 				"cityId": "2950159",
+// 				"appId": "<insert your appId from openweathermap.org here>",
+// 			}
+// 			
+// 			newWidget(scene, "weather", args)
+// 			addScene(scene)
+// 		}
+		
+		// show a web page using the built-in browser
+		{
+			scene = newWidget(qante, "Scene", args)
+			
+			args = {
+				"url": "http://rpibuntu.kicherer.org"
+			}
+			newWidget(scene, "webview", args)
+			
+			addScene(scene)
+		}
+	}
+}
